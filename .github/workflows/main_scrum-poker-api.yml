@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: your-app-name    # set this to your application's name
+  AZURE_WEBAPP_NAME: scrum-poker-api    # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
-  DOTNET_VERSION: '7.0.x'             # set this to the dot net version to use
+  DOTNET_VERSION: '8.0.x'             # set this to the dot net version to use
   
 jobs:
   build:
@@ -64,7 +64,9 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'scrum-poker-api'
+          app-name: ${{ env.AZURE_WEBAPP_NAME }} 
           slot-name: 'Production'
           package: .
-          
+
+      - name: Set Application Insights Instrumentation Key
+        run: az webapp config appsettings set --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group rg-scrum-poker --settings "ApplicationInsights:InstrumentationKey=${{ secrets.APPLICATIONINSIGHTS_INSTRUMENTATIONKEY }}"

@@ -2,17 +2,9 @@
 namespace ScrumPokerLogic.Domain
 {
     [Serializable]
-    internal class InvalidRoundException : Exception
+    internal class InvalidRoundException : BusinessException
     {
-        public InvalidRoundException()
-        {
-        }
-
         public InvalidRoundException(string? message) : base(message)
-        {
-        }
-
-        public InvalidRoundException(string? message, Exception? innerException) : base(message, innerException)
         {
         }
     }
