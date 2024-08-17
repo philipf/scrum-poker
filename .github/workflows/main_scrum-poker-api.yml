@@ -68,5 +68,5 @@ jobs:
           slot-name: 'Production'
           package: .
 
-      - name: Set Application Insights Instrumentation Key
-        run: az webapp config appsettings set --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group rg-scrum-poker --settings "ApplicationInsights:InstrumentationKey=${{ secrets.APPLICATIONINSIGHTS_INSTRUMENTATIONKEY }}"
+      # - name: Set Application Insights Instrumentation Key
+      #   run: az webapp config appsettings set --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group rg-scrum-poker --settings "ApplicationInsights__InstrumentationKey=${{ secrets.APPLICATIONINSIGHTS_INSTRUMENTATIONKEY }}"
