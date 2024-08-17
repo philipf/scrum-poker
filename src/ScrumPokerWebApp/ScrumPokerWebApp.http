@@ -1,0 +1,6 @@
+@ScrumPokerWebApp_HostAddress = https://localhost:7173
+
+GET {{ScrumPokerWebApp_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
