@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using ScrumPokerLogic.Domain;
 
 namespace ScrumPokerWebApp.Controllers
@@ -12,104 +11,167 @@ namespace ScrumPokerWebApp.Controllers
 
         [HttpPost("session")]
         [ProducesResponseType(typeof(Session), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult CreateSession(string facilitatorName, string sessionName = "")
         {
-            var facilitator = new Participant(facilitatorName, true);
-            var session = new Session(facilitator, sessionName);
-            var r = session.CreateRound();
-            session.AddRound(r);
-            sessions.Add(session);
-            return Ok(session);
+            try
+            {
+                var facilitator = new Participant(facilitatorName, true);
+                var session = new Session(facilitator, sessionName);
+                var r = session.CreateRound();
+                session.AddRound(r);
+                sessions.Add(session);
+
+                return Ok(session);
+
+            }
+            catch (BusinessException bex)
+            {
+                return HandleBusinessException(bex);
+            }
         }
 
         [HttpPost("join")]
         [ProducesResponseType(typeof(Session), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult JoinSession(Guid sessionId, string name)
         {
-            var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
-
-            if (session == null)
+            try
             {
-                return NotFound($"{sessionId} was not found as an active session. Make sure to first create a session before calling the join operation.");
+                var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
+
+                if (session == null)
+                {
+                    return NotFound($"{sessionId} was not found as an active session. Make sure to first create a session before calling the join operation.");
+                }
+
+                var participant = new Participant(name, false);
+                session.AddParticpant(participant);
+
+                return Ok(session);
             }
-
-            var participant = new Participant(name, false);
-            session.AddParticpant(participant);
-
-            return Ok(session);
+            catch (BusinessException bex)
+            {
+                return HandleBusinessException(bex);
+            }
         }
 
         [HttpPost("vote")]
         [ProducesResponseType(typeof(VotingRound), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult CastVote(Guid sessionId, string name, string vote)
         {
-            var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
-
-            if (session == null)
+            try
             {
-                return NotFound($"{sessionId} was not found as an active session. Make sure to first create a session before calling the join operation.");
+                var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
+
+                if (session == null)
+                {
+                    return NotFound($"{sessionId} was not found as an active session. Make sure to first create a session before calling the join operation.");
+                }
+
+                var participant = session.Participants.SingleOrDefault(p => p.Name == name);
+
+                if (participant == null)
+                {
+                    return NotFound($"{name} was not found as participant in this session. Make sure to join the session first");
+                }
+
+                session.CastVote(participant, vote);
+
+                return Ok(session.CurrentRound);
             }
-
-            var participant = session.Participants.SingleOrDefault(p => p.Name == name);
-
-            if (participant == null)
+            catch (BusinessException bex)
             {
-                return NotFound($"{name} was not found as participant in this session. Make sure to join the session first");
+                return HandleBusinessException(bex);
             }
-
-            session.CastVote(participant, vote);
-
-            return Ok(session.CurrentRound);
         }
 
         [HttpPost("new-round")]
         [ProducesResponseType(typeof(VotingRound), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult NewRound(Guid sessionId)
         {
-            var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
-
-            if (session == null)
+            try
             {
-                return NotFound($"{sessionId} was not found as an active session. Make sure to first create a session before calling the join operation.");
+                var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
+
+                if (session == null)
+                {
+                    return NotFound($"{sessionId} was not found as an active session. Make sure to first create a session before calling the join operation.");
+                }
+
+                var r = session.CreateRound();
+                session.Rounds.Add(r);
+
+                return Ok(r);
+
             }
-
-            var r = session.CreateRound();
-            session.Rounds.Add(r);
-
-            return Ok(r);
+            catch (BusinessException bex)
+            {
+                return HandleBusinessException(bex);
+            }
         }
 
         [HttpGet("round")]
         [ProducesResponseType(typeof(VotingRound), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult GetCurrentRound(Guid sessionId)
         {
-            var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
-
-            if (session == null)
+            try
             {
-                return NotFound($"{sessionId} was not found as an active session. Make sure to first create a session before calling the join operation.");
-            }
+                var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
 
-            return Ok(session.CurrentRound);
+                if (session == null)
+                {
+                    return NotFound($"{sessionId} was not found as an active session. Make sure to first create a session before calling the join operation.");
+                }
+
+                return Ok(session.CurrentRound);
+
+            }
+            catch (BusinessException bex)
+            {
+                return HandleBusinessException(bex);
+            }
+        }
+
+        private IActionResult HandleBusinessException(BusinessException bex)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Status = 400,
+                Title = "Business Exception",
+                Detail = bex.Message,
+                Instance = HttpContext.Request.Path
+            });
         }
 
         [HttpGet("session")]
         [ProducesResponseType(typeof(Session), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult GetSession(Guid sessionId)
         {
-            var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
-
-            if (session == null)
+            try
             {
-                return NotFound($"{sessionId} was not found as an active session. Make sure to first create a session before calling the join operation.");
-            }
+                var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
 
-            return Ok(session);
+                if (session == null)
+                {
+                    return NotFound($"{sessionId} was not found as an active session. Make sure to first create a session before calling the join operation.");
+                }
+
+                return Ok(session);
+            }
+            catch (BusinessException bex)
+            {
+                return HandleBusinessException(bex);
+            }
         }
     }
 }
