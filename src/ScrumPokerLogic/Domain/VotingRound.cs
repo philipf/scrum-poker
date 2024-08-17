@@ -50,7 +50,7 @@ namespace ScrumPokerLogic.Domain
             }
         }
 
-        public void CastVote(Participant participant, string voteValue)
+        public void CastVote(Participant participant, string? voteValue)
         {
             ArgumentNullException.ThrowIfNull(participant);
 
