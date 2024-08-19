@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ScrumPokerLogic.Domain;
 
-namespace ScrumPokerWebApp.Controllers
+namespace ScrumPokerApi.Controllers
 {
     [ApiController]
     [Route("api")]

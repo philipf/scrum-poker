@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScrumPokerLogic", "ScrumPok
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScrumPokerUnitTests", "ScrumPokerUnitTests\ScrumPokerUnitTests.csproj", "{489B5187-811A-4730-B92A-3A32E6901160}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrumPokerWebApp", "ScrumPokerWebApp\ScrumPokerWebApp.csproj", "{AE8B3E78-6B67-47DA-8D5C-08130084CF03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScrumPokerApi", "ScrumPokerApi\ScrumPokerApi.csproj", "{501C16AC-55DF-42F6-B071-04BAE4CE5395}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{489B5187-811A-4730-B92A-3A32E6901160}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{489B5187-811A-4730-B92A-3A32E6901160}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{489B5187-811A-4730-B92A-3A32E6901160}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AE8B3E78-6B67-47DA-8D5C-08130084CF03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AE8B3E78-6B67-47DA-8D5C-08130084CF03}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AE8B3E78-6B67-47DA-8D5C-08130084CF03}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AE8B3E78-6B67-47DA-8D5C-08130084CF03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{501C16AC-55DF-42F6-B071-04BAE4CE5395}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{501C16AC-55DF-42F6-B071-04BAE4CE5395}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{501C16AC-55DF-42F6-B071-04BAE4CE5395}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{501C16AC-55DF-42F6-B071-04BAE4CE5395}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
