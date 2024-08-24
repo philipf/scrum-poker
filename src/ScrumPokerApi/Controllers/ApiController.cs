@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ScrumPokerLogic.Domain;
+using ScrumPokerLogic.Infra.Persistance.InMemory;
 
 namespace ScrumPokerApi.Controllers
 {
@@ -7,20 +8,26 @@ namespace ScrumPokerApi.Controllers
     [Route("api")]
     public class ApiController : ControllerBase
     {
-        private static readonly List<Session> sessions = [];
+        private readonly ISessionRepository sessionRepository;
+
+        public ApiController(ISessionRepository sessionRepository)
+        {
+            this.sessionRepository = sessionRepository;
+        }
 
         [HttpPost("session")]
         [ProducesResponseType(typeof(Session), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult CreateSession(string facilitatorName, string sessionName = "")
+        public IActionResult CreateSession(string facilitatorName, string? sessionId, string sessionName = "")
         {
             try
             {
+
                 var facilitator = new Participant(facilitatorName, true);
-                var session = new Session(facilitator, sessionName);
+                var session = Session.NewSession(new SessionRepository(), facilitator, sessionId, sessionName);
                 var r = session.CreateRound();
                 session.AddRound(r);
-                sessions.Add(session);
+                sessionRepository.Add(session);
 
                 return Ok(session);
 
@@ -35,11 +42,11 @@ namespace ScrumPokerApi.Controllers
         [ProducesResponseType(typeof(Session), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult JoinSession(Guid sessionId, string name)
+        public IActionResult JoinSession(string sessionId, string name)
         {
             try
             {
-                var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
+                Session? session = sessionRepository.GetById(sessionId);
 
                 if (session == null)
                 {
@@ -61,11 +68,11 @@ namespace ScrumPokerApi.Controllers
         [ProducesResponseType(typeof(VotingRound), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult CastVote(Guid sessionId, string name, string vote)
+        public IActionResult CastVote(string sessionId, string name, string vote)
         {
             try
             {
-                var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
+                Session? session = sessionRepository.GetById(sessionId);
 
                 if (session == null)
                 {
@@ -93,11 +100,11 @@ namespace ScrumPokerApi.Controllers
         [ProducesResponseType(typeof(VotingRound), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult NewRound(Guid sessionId)
+        public IActionResult NewRound(string sessionId)
         {
             try
             {
-                var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
+                Session? session = sessionRepository.GetById(sessionId);
 
                 if (session == null)
                 {
@@ -120,11 +127,11 @@ namespace ScrumPokerApi.Controllers
         [ProducesResponseType(typeof(VotingRound), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult GetCurrentRound(Guid sessionId)
+        public IActionResult GetCurrentRound(string sessionId)
         {
             try
             {
-                var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
+                Session? session = sessionRepository.GetById(sessionId);
 
                 if (session == null)
                 {
@@ -155,11 +162,11 @@ namespace ScrumPokerApi.Controllers
         [ProducesResponseType(typeof(Session), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult GetSession(Guid sessionId)
+        public IActionResult GetSession(string sessionId)
         {
             try
             {
-                var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
+                Session? session = sessionRepository.GetById(sessionId);
 
                 if (session == null)
                 {

@@ -2,34 +2,49 @@
 {
     public class Session
     {
-        public Guid SessionId { get; set; }
+        public string SessionId { get; private set; } = "N/A";
         public string SessionName { get; set; } = string.Empty;
         public List<VotingRound> Rounds { get; } = [];
         public List<Participant> Participants { get; } = [];
 
         public static readonly string[] DefaultVotingScale = ["0", "1", "2", "3", "5", "8", "13", "21", "34", "55", "89", "?", "Break"];
-        public string[] VotingScale { get; } = DefaultVotingScale;
+        public string[] VotingScale { get; private set;} = DefaultVotingScale;
 
         public DateTime StartTime = DateTime.UtcNow;
 
         // Return the latest round, which is the current round
         public VotingRound? CurrentRound => Rounds.Count == 0 ? null : Rounds[^1];
 
-        public Session(Participant facilitator,
-                       string sessionName = "",
+        public static Session NewSession(ISessionRepository repo,
+                       Participant facilitator,
+                       string? sessionId = null,
+                       string? sessionName = null,
                        string[]? votingScale = null)
         {
-            SessionId = Guid.NewGuid();
-            SessionName = sessionName ?? string.Empty;
+
+            sessionId ??= Guid.NewGuid().ToString();
+
+            Session? existingSession = repo.GetById(sessionId);
+            if (existingSession != null)
+            {
+                throw new DuplicateSessionIdException($"The sessionId [{sessionId}] already exists");
+            }
+
+            var newSession = new Session();
+            newSession.SessionName = sessionName ?? string.Empty;
+            newSession.SessionId = sessionId;
 
             if (votingScale != null)
             {
                 ValidateVotingScale(votingScale);
-                VotingScale = votingScale;
+                newSession.VotingScale = votingScale;
             }
 
-            AddFacilitator(facilitator);
+            newSession.AddFacilitator(facilitator);
+
+            return newSession;
         }
+
 
         private static void ValidateVotingScale(string[] votingScale)
         {
@@ -116,6 +131,17 @@
         private bool HasDuplicateParticpants(Participant particpant)
         {
             return Participants.Contains(particpant);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Session session &&
+                   SessionId == session.SessionId;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(SessionId);
         }
     }
 }

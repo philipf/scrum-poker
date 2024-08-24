@@ -1,10 +1,5 @@
 ﻿using ScrumPokerLogic.Domain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+using ScrumPokerLogic.Infra.Persistance.InMemory;
 
 namespace ScrumPokerUnitTests
 {
@@ -16,7 +11,7 @@ namespace ScrumPokerUnitTests
         public void SingleRound()
         {
             var f = new Participant("PF", true);
-            var s = new Session(f);
+            var s = Session.NewSession(new SessionRepository(), f);
 
             var p1 = new Participant("TF");
             var p2 = new Participant("CF");
@@ -44,7 +39,7 @@ namespace ScrumPokerUnitTests
         public void TwoRound()
         {
             var f = new Participant("PF", true);
-            var s = new Session(f);
+            var s = Session.NewSession(new SessionRepository(), f);
 
             var p1 = new Participant("TF");
             var p2 = new Participant("CF");
