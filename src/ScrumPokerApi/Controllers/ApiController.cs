@@ -4,17 +4,34 @@ using ScrumPokerLogic.Infra.Persistance.InMemory;
 
 namespace ScrumPokerApi.Controllers
 {
+    /// <summary>
+    /// API Controller for managing Scrum Poker sessions.
+    /// </summary>
     [ApiController]
     [Route("api")]
+    [Produces("application/json")]
     public class ApiController : ControllerBase
     {
         private readonly ISessionRepository sessionRepository;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApiController"/> class.
+        /// </summary>
+        /// <param name="sessionRepository">The session repository instance.</param>
         public ApiController(ISessionRepository sessionRepository)
         {
             this.sessionRepository = sessionRepository;
         }
 
+        /// <summary>
+        /// Creates a new Scrum Poker session.
+        /// </summary>
+        /// <param name="facilitatorName">The name of the facilitator who creates the session.</param>
+        /// <param name="sessionId">Optional. The ID of the session. If not provided, a new one will be generated.</param>
+        /// <param name="sessionName">Optional. The name of the session. Default is an empty string.</param>
+        /// <returns>The newly created session.</returns>
+        /// <response code="200">Returns the newly created session.</response>
+        /// <response code="400">If there is a business exception or input validation fails.</response>
         [HttpPost("session")]
         [ProducesResponseType(typeof(Session), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -22,7 +39,6 @@ namespace ScrumPokerApi.Controllers
         {
             try
             {
-
                 var facilitator = new Participant(facilitatorName, true);
                 var session = Session.NewSession(new SessionRepository(), facilitator, sessionId, sessionName);
                 var r = session.CreateRound();
@@ -30,7 +46,6 @@ namespace ScrumPokerApi.Controllers
                 sessionRepository.Add(session);
 
                 return Ok(session);
-
             }
             catch (BusinessException bex)
             {
@@ -38,6 +53,15 @@ namespace ScrumPokerApi.Controllers
             }
         }
 
+        /// <summary>
+        /// Joins an existing Scrum Poker session.
+        /// </summary>
+        /// <param name="sessionId">The ID of the session to join.</param>
+        /// <param name="name">The name of the participant joining the session.</param>
+        /// <returns>The session with the new participant added.</returns>
+        /// <response code="200">Returns the session with the new participant added.</response>
+        /// <response code="404">If the session ID is not found.</response>
+        /// <response code="400">If there is a business exception or input validation fails.</response>
         [HttpPost("join")]
         [ProducesResponseType(typeof(Session), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -64,6 +88,16 @@ namespace ScrumPokerApi.Controllers
             }
         }
 
+        /// <summary>
+        /// Casts a vote in the current round of a session.
+        /// </summary>
+        /// <param name="sessionId">The ID of the session where the vote is cast.</param>
+        /// <param name="name">The name of the participant casting the vote.</param>
+        /// <param name="vote">The vote being cast by the participant.</param>
+        /// <returns>The current voting round with the updated vote.</returns>
+        /// <response code="200">Returns the updated voting round.</response>
+        /// <response code="404">If the session or participant is not found.</response>
+        /// <response code="400">If there is a business exception or input validation fails.</response>
         [HttpPost("vote")]
         [ProducesResponseType(typeof(VotingRound), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -96,6 +130,14 @@ namespace ScrumPokerApi.Controllers
             }
         }
 
+        /// <summary>
+        /// Starts a new round in an existing session.
+        /// </summary>
+        /// <param name="sessionId">The ID of the session where the new round is started.</param>
+        /// <returns>The newly created voting round.</returns>
+        /// <response code="200">Returns the newly created voting round.</response>
+        /// <response code="404">If the session ID is not found.</response>
+        /// <response code="400">If there is a business exception or input validation fails.</response>
         [HttpPost("new-round")]
         [ProducesResponseType(typeof(VotingRound), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -115,7 +157,6 @@ namespace ScrumPokerApi.Controllers
                 session.Rounds.Add(r);
 
                 return Ok(r);
-
             }
             catch (BusinessException bex)
             {
@@ -123,6 +164,14 @@ namespace ScrumPokerApi.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves the current round of a session.
+        /// </summary>
+        /// <param name="sessionId">The ID of the session whose current round is retrieved.</param>
+        /// <returns>The current voting round of the session.</returns>
+        /// <response code="200">Returns the current voting round.</response>
+        /// <response code="404">If the session ID is not found.</response>
+        /// <response code="400">If there is a business exception or input validation fails.</response>
         [HttpGet("round")]
         [ProducesResponseType(typeof(VotingRound), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -139,7 +188,6 @@ namespace ScrumPokerApi.Controllers
                 }
 
                 return Ok(session.CurrentRound);
-
             }
             catch (BusinessException bex)
             {
@@ -147,17 +195,14 @@ namespace ScrumPokerApi.Controllers
             }
         }
 
-        private IActionResult HandleBusinessException(BusinessException bex)
-        {
-            return BadRequest(new ProblemDetails
-            {
-                Status = 400,
-                Title = "Business Exception",
-                Detail = bex.Message,
-                Instance = HttpContext.Request.Path
-            });
-        }
-
+        /// <summary>
+        /// Retrieves a session by its ID.
+        /// </summary>
+        /// <param name="sessionId">The ID of the session to retrieve.</param>
+        /// <returns>The session with the specified ID.</returns>
+        /// <response code="200">Returns the session with the specified ID.</response>
+        /// <response code="404">If the session ID is not found.</response>
+        /// <response code="400">If there is a business exception or input validation fails.</response>
         [HttpGet("session")]
         [ProducesResponseType(typeof(Session), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -179,6 +224,17 @@ namespace ScrumPokerApi.Controllers
             {
                 return HandleBusinessException(bex);
             }
+        }
+
+        private IActionResult HandleBusinessException(BusinessException bex)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Status = 400,
+                Title = "Business Exception",
+                Detail = bex.Message,
+                Instance = HttpContext.Request.Path
+            });
         }
     }
 }
