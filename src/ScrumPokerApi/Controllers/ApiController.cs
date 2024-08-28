@@ -134,11 +134,11 @@ namespace ScrumPokerApi.Controllers
         [ProducesResponseType(typeof(VotingRound), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult RevealVotes(Guid sessionId, string name)
+        public IActionResult RevealVotes(string sessionId, string name)
         {
             try
             {
-                var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
+                Session? session = sessionRepository.GetById(sessionId);
 
                 if (session == null)
                 {

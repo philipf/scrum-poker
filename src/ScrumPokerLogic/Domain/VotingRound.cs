@@ -34,8 +34,7 @@ namespace ScrumPokerLogic.Domain
 
             foreach (Participant participant in participants)
             {
-                var vote = new Vote(participant);
-                Votes.Add(vote);
+                CastVote(participant, null);
             }
         }
 
@@ -68,7 +67,14 @@ namespace ScrumPokerLogic.Domain
 
             SetStatus(VotingStatus.InProgress);
 
-            var v = Votes.Single(v => v.Participant == participant);
+            var v = Votes.SingleOrDefault(v => v.Participant == participant);
+
+            if (v == null)
+            {
+                v = new Vote(participant);
+                Votes.Add(v);
+            }
+
             v.Value = voteValue;
             v.VoteTime = DateTime.UtcNow;
         }
