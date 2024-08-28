@@ -89,6 +89,38 @@ namespace ScrumPokerApi.Controllers
             }
         }
 
+        [HttpPost("reveal")]
+        [ProducesResponseType(typeof(VotingRound), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult RevealVotes(Guid sessionId, string name)
+        {
+            try
+            {
+                var session = sessions.SingleOrDefault(s => s.SessionId == sessionId);
+
+                if (session == null)
+                {
+                    return NotFound($"{sessionId} was not found as an active session. Make sure to first create a session before calling the join operation.");
+                }
+
+                var participant = session.Participants.SingleOrDefault(p => p.Name == name);
+
+                if (participant == null)
+                {
+                    return NotFound($"{name} was not found as participant in this session. Make sure to join the session first");
+                }
+
+                session.RevealVotes(participant);
+
+                return Ok(session.CurrentRound);
+            }
+            catch (BusinessException bex)
+            {
+                return HandleBusinessException(bex);
+            }
+        }
+
         [HttpPost("new-round")]
         [ProducesResponseType(typeof(VotingRound), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

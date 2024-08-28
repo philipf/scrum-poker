@@ -5,6 +5,8 @@ namespace ScrumPokerLogic.Domain
 {
     public class VotingRound
     {
+        public string Status { get; set; }
+
         public int RoundId { get; }
         public string[] VotingScale { get; }
         public List<Vote> Votes { get; } = [];
@@ -20,6 +22,7 @@ namespace ScrumPokerLogic.Domain
 
             RoundId = roundId;
             VotingScale = votingScale;
+            SetStatus(VotingStatus.New);
             InitVotes(participants);
         }
 
@@ -45,8 +48,7 @@ namespace ScrumPokerLogic.Domain
             // Add the participant to the voting round with null vote
             if (!participants.Contains(participant))
             {
-                var vote = new Vote(participant);
-                Votes.Add(vote);
+                CastVote(participant, null);
             }
         }
 
@@ -54,10 +56,17 @@ namespace ScrumPokerLogic.Domain
         {
             ArgumentNullException.ThrowIfNull(participant);
 
+            if (Status == VotingStatus.Revealed || Status == VotingStatus.Closed)
+            {
+                throw new InvalidVoteException($"Votes are now longer allowed. The current round status is {Status}");
+            }
+
             if (voteValue != null)
             {
                 ValidateVoteInScale(voteValue);
             }
+
+            SetStatus(VotingStatus.InProgress);
 
             var v = Votes.Single(v => v.Participant == participant);
             v.Value = voteValue;
@@ -68,6 +77,11 @@ namespace ScrumPokerLogic.Domain
         {
             if (!VotingScale.Contains(vote))
                 throw new InvalidVoteException($"The vote [{vote}] is not a valid vote because it not in the voting scale [{string.Join(',', VotingScale)}]");
+        }
+
+        internal void SetStatus(string votingStatus)
+        {
+            Status = votingStatus;
         }
     }
 }

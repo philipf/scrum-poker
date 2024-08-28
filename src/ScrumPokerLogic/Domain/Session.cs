@@ -74,17 +74,24 @@
                 throw new Exception("No rounds have been created");
             }
 
-            var p = Participants.SingleOrDefault(p =>  p.Id == participant.Id);
+            var p = Participants.SingleOrDefault(p => p.Id == participant.Id);
 
             if (p == null)
             {
-                throw new Exception($"Participant {participant.Id} - { participant.Name } has not been added to the session");
+                throw new Exception($"Participant {participant.Id} - {participant.Name} has not been added to the session");
             }
 
             CurrentRound.AddParticipant(participant);
             CurrentRound.CastVote(participant, vote);
         }
 
+        public void RevealVotes(Participant participant)
+        {
+            if (CurrentRound != null)
+            {
+                CurrentRound.SetStatus(VotingStatus.Revealed);
+            }
+        }
 
         public void AddRound(VotingRound round)
         {
@@ -93,7 +100,17 @@
                 throw new InvalidRoundException($"Cannot add round because the round id {round.RoundId} already exists in the session");
             }
 
+            ClosePreviousRound();
+
             Rounds.Add(round);
+        }
+
+        private void ClosePreviousRound()
+        {
+            if (CurrentRound != null)
+            {
+                CurrentRound.SetStatus(VotingStatus.Closed);
+            }
         }
 
         private bool HasDuplicateRoundId(VotingRound round)
