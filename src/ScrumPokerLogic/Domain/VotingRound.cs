@@ -57,7 +57,7 @@ namespace ScrumPokerLogic.Domain
 
             if (Status == VotingStatus.Revealed || Status == VotingStatus.Closed)
             {
-                throw new InvalidVoteException($"Votes are now longer allowed. The current round status is {Status}");
+                throw new InvalidVoteException($"Votes are no longer allowed. The current round status is {Status}");
             }
 
             if (voteValue != null)
